@@ -236,6 +236,7 @@
                     font-weight: bold;
                 }
             </style>
+
         {% endblock %}
         <title>{% block title %}BuscaPelis{% endblock %}</title>
         {% endblock %}
@@ -244,18 +245,25 @@
         <!-- Header -->
         <header>
             <div class="d-flex align-items-center">
-                <!-- Icono del logo (vacío por ahora) -->
+                <!-- Icono del logo -->
                 <img class="bg-white" src="{{ url_for('static', filename='logoia.png') }}" alt="logo ia" style="width: 60px; height: 60px; border-radius: 100%;">
                 <a href="/" id="home-link" style="color: white; text-decoration: none; font-size: 24px; font-weight: bold;">BuscaPelis</a>
             </div>
-            <!-- Enlace para la actualización de datos -->
-            <!-- <a href="/configuration" id="update-data">Editar Perfíl</a> -->
+
             <!-- Menú principal (visible en escritorio) -->
             <nav class="d-none d-md-flex">
-                <a href="/chat" id="go-to-chat" style="color: white; text-decoration: none;">Ir al Chat</a>
-                <a href="/configuration" id="update-data" style="color: white; text-decoration: none; margin-right: 20px;">Editar Perfíl</a>
+                {% if is_authenticated() %}
+                    <!-- Mostrar solo si el usuario está autenticado -->
+                    <a href="{{ url_for('chat') }}" id="go-to-chat" style="color: white; text-decoration: none;">Ir al Chat</a>
+                    <a href="{{ url_for('configuration') }}" id="update-data" style="color: white; text-decoration: none; margin-right: 20px;">Editar Perfil</a>
+                    <a href="{{ url_for('logout') }}" id="logout" style="color: white; text-decoration: none;">Cerrar sesión</a>
+                {% else %}
+                    <!-- Mostrar solo si el usuario NO está autenticado -->
+                    <a href="{{ url_for('login') }}" id="login" style="color: white; text-decoration: none;">Iniciar sesión</a>
+                {% endif %}
             </nav>
         </header>
+
 
         <!-- Contenido de la página -->
         <div class="container">

@@ -3,6 +3,7 @@ from flask import (
     render_template,
     request,
     redirect,
+    session,
     url_for,
     flash,
 )
@@ -12,6 +13,7 @@ from flask_bootstrap import Bootstrap5
 from openai import OpenAI
 from dotenv import load_dotenv
 from db import db_config, db
+from decorators import login_required, redirect_if_logged_in
 from models import Message, User, Genre, UserGenre
 # from flask_migrate import Migrate
 
@@ -29,21 +31,15 @@ db_config(app)
 # migrate = Migrate(app, db)
 
 @app.route('/welcome')
+@login_required
 def welcome():
     return render_template('welcome.html')
 
-@app.route('/login')
-def login():
-    return render_template('login.html')  # Aquí deberías crear el formulario de inicio de sesión
-
-@app.route('/register')
-def register():
-    return render_template('register.html')  # Aquí deberías crear el formulario de registro
-
 
 @app.route('/')
+
 def index():
-    return redirect(url_for('welcome'))
+    return redirect(url_for('login'))
 
 
 # #route para las vistas
@@ -53,15 +49,16 @@ def index():
 
 
 @app.route('/chat', methods=['GET', 'POST'])
+@login_required
 def chat():
-    user_id = 1  # Asumimos que el ID del usuario es 1 (puedes cambiarlo según la lógica de autenticación)
+    user_id =session.get("user_id")  # Asumimos que el ID del usuario es 1 (puedes cambiarlo según la lógica de autenticación)
+    print("el user_id es", user_id)
 
     # Obtener géneros del usuario
     user = User.query.get(user_id)
     user_genres = user.get_genres()
 
-    mensajes = Message.get_all_messages()
-    print(len(mensajes))
+    mensajes = Message.get_messages_by_user(user_id)
     if len(mensajes) == 0:
         # Crear un mensaje predeterminado
         message = Message(
@@ -85,13 +82,6 @@ def chat():
     for genre in user_genres:
         misgeneros = misgeneros + str(genre.name) + ", "
 
-    print(misgeneros)
-
-    # preferences.append({
-    #     'mensaje': request.form.get('message'), 
-    #     'titulo': 'Enviar'
-    # })
-    
     preferences.append({
         'mensaje': f'Recomiéndame una película que sea muy rara de ver, no conocida pero memorable, que sea de los generos {misgeneros}', 
         'titulo': 'Sorpréndeme!'
@@ -111,7 +101,7 @@ def chat():
         intents[genre_name] = f'Recomiéndame una película de {genre_name}'
 
     if request.method == 'GET':
-        return render_template('chat.html', messages=Message.get_all_messages(), preferences=preferences)
+        return render_template('chat.html', messages=Message.get_messages_by_user(user_id), preferences=preferences)
 
     intent = request.form.get('intent')
 
@@ -128,7 +118,7 @@ def chat():
             "content": "Eres un chatbot que recomienda películas, te llamas 'BuscaPelis'. Tu rol es responder recomendaciones de manera breve y concisa. No repitas recomendaciones de películas.",
         }]
 
-        for message in Message.get_all_messages():
+        for message in Message.get_messages_by_user(user_id):
             messages_for_llm.append({
                 "role": message.author,
                 "content": message.content,
@@ -137,20 +127,21 @@ def chat():
         chat_completion = client.chat.completions.create(
             messages=messages_for_llm,
             model="gpt-4o",
-            temperature=1.5
+            temperature=1.2
         )
 
         model_recommendation = chat_completion.choices[0].message.content
         db.session.add(Message(content=model_recommendation, author="assistant", user_id=user_id))
         db.session.commit()
 
-        messages = Message.get_all_messages()
+        messages = Message.get_messages_by_user(user_id)
         return render_template('chat.html', messages=messages, preferences=preferences)
     
 
 @app.route('/configuration', methods=['GET', 'POST'])
-def configurations():
-    user = User.query.get(1)  # Usamos user_id = 1 como ejemplo
+def configuration():
+    user_id = session.get("user_id")
+    user = User.query.get(user_id)  # Usamos user_id = 1 como ejemplo
     all_genres = Genre.query.all()
 
     # Obtener géneros actuales del usuario
@@ -181,61 +172,48 @@ def configurations():
             db.session.commit()
             flash('Preferencias actualizadas correctamente', 'success')
 
-        return redirect(url_for('configurations'))  # Redirigir para recargar la página con los datos actualizados
+        return redirect(url_for('configuration'))  # Redirigir para recargar la página con los datos actualizados
 
     return render_template('configuration.html', user=user, all_genres=all_genres, user_genres=user_genres)
 
-# def chat():
 
-#     # Lista de preferencias
-#     preferences = [
-#         {'mensaje': 'Recomiéndame una película que sea muy rara de ver, no conocida pero memorable', 'titulo': 'Sorpréndeme!'},
-#         {'mensaje': 'Recomiéndame una película de terror', 'titulo': 'Terror'},
-#         {'mensaje': 'Recomiéndame una película de acción', 'titulo': 'Acción'},
-#         {'mensaje': 'Recomiéndame una película de comedia', 'titulo': 'Comedia'}
-#     ]
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    # Si el usuario ya está autenticado, lo redirigimos al chat o dashboard
+    if "user_id" in session:
+        return redirect(url_for("welcome"))  # O redirige a la página deseada (chat, dashboard, etc.)
 
-#     if request.method == 'GET':
-#         return render_template('chat.html', messages = Message.get_all_messages(), preferences = preferences)
+    # Si la solicitud es un POST (enviar formulario)
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
 
-#     intent = request.form.get('intent')
+        # Busca al usuario en la base de datos por su username
+        user = User.query.filter_by(username=username).first()
 
-#     print(intent)
-#     intents = {
-#         'Sorpréndeme!': 'Recomiéndame una película que sea muy rara de ver, no conocida pero memorable',
-#         'Terror': 'Recomiéndame una película de terror',
-#         'Acción': 'Recomiéndame una película de acción',
-#         'Comedia': 'Recomiéndame una película de comedia',
-#         'Enviar': request.form.get('message')
-#     }
+        # Verifica que el usuario exista y que la contraseña coincida
+        if user and user.password == password:
+            session["user_id"] = user.id  # Guarda el ID del usuario en la sesión
+            flash("Inicio de sesión exitoso", "success")
+            return redirect(url_for("welcome"))  # Redirige a la página protegida (chat o dashboard)
+        else:
+            flash("Credenciales incorrectas", "danger")
+            return redirect(url_for("login"))  # Redirige nuevamente al login si las credenciales son incorrectas
 
-#     if intent in intents:
-#         user_message = intents[intent]
+    # Si es una solicitud GET, simplemente renderiza la página de login
+    return render_template("login.html")
 
-#         # Guardar nuevo mensaje en la BD
-#         db.session.add(Message(content=user_message, author="user", user_id = 1))
-#         db.session.commit()
 
-#         messages_for_llm = [{
-#             "role": "system",
-#             "content": "Eres un chatbot que recomienda películas, te llamas 'BuscaPelis'. Tu rol es responder recomendaciones de manera breve y concisa. No repitas recomendaciones.",
-#         }]
 
-#         for message in Message.get_all_messages():
-#             messages_for_llm.append({
-#                 "role": message.author,
-#                 "content": message.content,
-#             })
+@app.route("/logout")
+def logout():
+    session.pop("user_id", None)
+    flash("Has cerrado sesión.", "info")
+    return redirect(url_for("login"))
 
-#         chat_completion = client.chat.completions.create(
-#             messages=messages_for_llm,
-#             model="gpt-4o",
-#             temperature=1
-#         )
+def is_authenticated():
+    return "user_id" in session
 
-#         model_recommendation = chat_completion.choices[0].message.content
-#         db.session.add(Message(content=model_recommendation, author="assistant", user_id = 1))
-#         db.session.commit()
-
-#         messages = Message.get_all_messages()
-#         return render_template('chat.html', messages=messages, preferences=preferences)
+@app.context_processor
+def inject_user():
+    return {"is_authenticated": is_authenticated}

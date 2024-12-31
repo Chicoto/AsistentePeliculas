@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2 class="text-center">Iniciar Sesión</h2>
+            <form action="{{ url_for('login') }}" method="POST">
+                <!-- Campo para el nombre de usuario -->
+                <div class="form-group">
+                    <h5>Nombre de usuario</h5>
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="username"
+                        name="username"
+                        placeholder="Ingresa tu nombre de usuario"
+                        required
+                    >
+                </div>
+                <!-- Campo para la contraseña -->
+                <div class="form-group mt-3">
+                    <h5>Contraseña</h5>
+                    <input
+                        type="password"
+                        class="form-control"
+                        id="password"
+                        name="password"
+                        placeholder="Ingresa tu contraseña"
+                        required
+                    >
+                </div>
+                <!-- Botón para enviar -->
+                <div class="form-group mt-4">
+                    <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
+                </div>
+            </form>
+
+            <!-- Alerta si el login falla -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="alert alert-danger mt-3" role="alert">
+                    {% for category, message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -48,6 +48,10 @@ class User(db.Model):
     genres = db.relationship('Genre', secondary='user_genres', backref='users', lazy='dynamic')  # Relación many-to-many con Genre
     messages = db.relationship('Message', back_populates='user', lazy=True)  # Relación con los mensajes
 
+    def __init__(self, username, password):
+        self.username = username
+        self.password = password
+
     def get_genres(self):
         return self.genres.all()
     
