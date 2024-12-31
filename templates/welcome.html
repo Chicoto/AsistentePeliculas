@@ -4,14 +4,22 @@
 
 {% block content %}
     <div class="container col-xxl-8 px-4 py-5">
-        <h1 class="display-4">¡Bienvenido a BuscaPelis!</h1>
-        <h5 class="lead">Preguntale a SofIA, tu asistente personal para recomendarte películas. ¿Te gustaría recibir una recomendación personalizada? ¡Ve al chat y conversa con SofIA!</h5>
+        <!-- Sección de bienvenida -->
+        <div class="mb-5">
+            <h1 class="display-4">¡Bienvenido a BuscaPelis!</h1>
+            <h5 class="lead">
+                Preguntale a <b>SofIA</b>, tu asistente personal para recomendarte películas. 
+                ¿Te gustaría recibir una recomendación personalizada? 
+                ¡Ve y conversa con <b>SofIA</b>!
+            </h5>
+        </div>
         
-        <div class="mb-4 mt-16">
+        <!-- Sección de opciones de acción -->
+        <div class="mb-4 mt-4">
             <h2>¿Qué quieres hacer?</h2>
             <div class="d-flex flex-column">
-                <a href="/chat" class="btn btn-primary mb-2">Ir al Chat</a>
-                <a href="/configuration" class="btn btn-primary mb-2">Editar Perfíl</a>
+                <a href="/chat" class="btn btn-primary mb-2">Hablar con SofIA</a>
+                <a href="/configuration" class="btn btn-primary mb-2">Editar Perfil</a>
             </div>
         </div>
     </div>

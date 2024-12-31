@@ -26,7 +26,8 @@ class Message(db.Model):
 
     @classmethod
     def get_messages_by_user(cls, user_id):
-        return db.session.query(cls).filter(cls.user_id == user_id).all()
+        return db.session.query(cls).filter(cls.user_id == user_id).order_by(cls.id.asc()).all()
+
    
 class Genre(db.Model):
     __tablename__ = 'genres'

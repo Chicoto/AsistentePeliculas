@@ -208,7 +208,7 @@ def login():
 @app.route("/logout")
 def logout():
     session.pop("user_id", None)
-    flash("Has cerrado sesión.", "info")
+    #flash("Has cerrado sesión.", "info")
     return redirect(url_for("login"))
 
 def is_authenticated():
