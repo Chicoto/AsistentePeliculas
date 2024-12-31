@@ -65,7 +65,7 @@ def chat():
     if len(mensajes) == 0:
         # Crear un mensaje predeterminado
         message = Message(
-            content="Hola! Bienvenido a BuscaPelis ¿Que te puedo recomendar?",
+            content="Hola! Bienvenido a BuscaPelis, soy SofIA y estoy aquí para ayudarte ¿Que te puedo recomendar?",
             author="assistant",
             user_id=user_id
         )
