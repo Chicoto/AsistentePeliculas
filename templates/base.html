@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="es" data-bs-theme="dark">
+    <head>
+        {% block head %}
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+        {% block styles %}
+            <!-- Bootstrap CSS -->
+            {{ bootstrap.load_css() }}
+            <style>
+                /* Nueva Paleta de Colores */
+                :root {
+                    --gray-light: #F4F4F4;
+                    --gray-medium: #B0B0B0;
+                    --gray-dark: #333333;
+                    --purple-light: #B3A0D4;
+                    --purple-medium: #6A4C9C;
+                    --purple-dark: #4C2A85;
+                }
+
+                /* Fondo y Contenedor */
+                .container {
+                    background-color: var(--gray-light);
+                    border-radius: 15px;
+                    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+                    padding: 20px;
+                    margin-top: 60px; /* Ajuste para el header fijo */
+                }
+
+                /* Header */
+                header {
+                    position: fixed; /* Hacer el header fijo */
+                    top: 0; /* Colocarlo en la parte superior */
+                    left: 0; /* Alinearlo con el borde izquierdo */
+                    width: 100%; /* Asegurar que ocupe todo el ancho */
+                    background-color: var(--purple-medium);
+                    color: white;
+                    padding: 20px 30px;
+                    border-radius: 0 0 15px 15px;
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    z-index: 1000; /* Asegurar que esté por encima del contenido */
+                }
+
+                header .logo {
+                    width: 40px;
+                    height: 40px;
+                    background-color: white;
+                    border-radius: 50%;
+                    margin-right: 10px;
+                }
+
+                header h1 {
+                    margin: 0;
+                    font-size: 24px;
+                    font-weight: bold;
+                }
+
+                header a {
+                    color: white;
+                    font-size: 14px;
+                    text-decoration: none;
+                    margin-left: 30px;
+                }
+
+                header a:hover {
+                    text-decoration: underline;
+                }
+
+                /* Footer */
+                footer {
+                    background-color: var(--purple-dark);
+                    color: white;
+                    padding: 20px 30px;
+                    text-align: center;
+                    border-radius: 15px;
+                    box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.1);
+                    margin-top: 40px;
+                }
+
+                footer p {
+                    margin: 5px 0;
+                }
+
+                footer a {
+                    color: white;
+                    text-decoration: none;
+                }
+
+                footer a:hover {
+                    text-decoration: underline;
+                }
+
+                /* Botones de Preferencias */
+                .btn-azure {
+                    background-color: var(--purple-medium);
+                    border: none;
+                    color: white;
+                    font-weight: bold;
+                }
+
+                .btn-azure:hover {
+                    background-color: var(--purple-dark);
+                }
+
+                /* Estilo de los botones de enviar */
+                .btn-primary {
+                    border-radius: 25px;
+                    background-color: var(--purple-medium);
+                    border: none;
+                }
+
+                .btn-primary:hover {
+                    background-color: var(--purple-dark);
+                }
+
+                /* Nueva Paleta de Colores */
+                :root {
+                    --gray-light: #F4F4F4;
+                    --gray-medium: #B0B0B0;
+                    --gray-dark: #333333;
+                    --purple-light: #B3A0D4;
+                    --purple-medium: #6A4C9C;
+                    --purple-dark: #4C2A85;
+                }
+            
+                /* Contenedor */
+                .chat-container {
+                    background-color: var(--gray-light);
+                    border-radius: 15px;
+                    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+                    padding: 20px;
+                }
+            
+                /* Mensajes */
+                .message-box {
+                    background-color: var(--purple-light);
+                    border-radius: 15px;
+                    max-width: 80%;
+                    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+                }
+            
+                .message-box p {
+                    color: var(--gray-dark);
+                }
+            
+                .user-message {
+                    background-color: var(--purple-light) !important;
+                    color: white;
+                }
+
+                .assistant-message {
+                    background-color: var(--purple-light) !important;
+                    color: white;
+                }
+            
+                /* Preferencias */
+                .btn-azure {
+                    background-color: var(--purple-medium);
+                    border: none;
+                    color: white;
+                    font-weight: bold;
+                }
+            
+                .btn-azure:hover {
+                    background-color: var(--purple-dark);
+                }
+            
+                /* Entrada de mensaje */
+                .input-message {
+                    border-radius: 25px;
+                    border: 2px solid var(--purple-medium);
+                    padding: 15px;
+                }
+            
+                .input-message:focus {
+                    border-color: var(--purple-dark);
+                    box-shadow: 0 0 5px rgba(106, 76, 156, 0.5);
+                }
+            
+                /* Estilo de los botones de enviar */
+                .btn-primary {
+                    border-radius: 25px;
+                    background-color: var(--purple-medium);
+                    border: none;
+                }
+            
+                .btn-primary:hover {
+                    background-color: var(--purple-dark);
+                }
+            
+                /* Imágenes de usuario */
+                .bg-white {
+                    background-color: white;
+                    border-radius: 50%;
+                    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+                }
+            
+                /* Estilo para el título de peticiones rápidas */
+                h5 {
+                    font-weight: bold;
+                    color: var(--purple-dark);
+                }
+            
+                /*Asegura que los botones y mensajes no se sobrescriban por otros estilos*/
+                .assistant-message {
+                    background-color: unset !important;
+                }
+
+                .form-label {
+                    color: var(--gray-dark); /* Color oscuro */
+                    font-weight: bold;
+                }
+
+                /* Títulos h2 */
+                h2 {
+                    font-weight: bold;
+                    color: var(--purple-dark);
+                    font-size: 28px;
+                }
+
+                /* Títulos h1 */
+                h1 {
+                    font-weight: bold;
+                    color: var(--purple-dark);
+                    font-size: 36px;
+                }
+                
+                .form-check-label{
+                    color: var(--gray-dark); /* Color oscuro */
+                    font-weight: bold;
+                }
+            </style>
+        {% endblock %}
+        <title>{% block title %}BuscaPelis{% endblock %}</title>
+        {% endblock %}
+    </head>
+    <body>
+        <!-- Header -->
+        <header>
+            <div class="d-flex align-items-center">
+                <!-- Icono del logo (vacío por ahora) -->
+                <img class="bg-white" src="{{ url_for('static', filename='logoia.png') }}" alt="logo ia" style="width: 60px; height: 60px; border-radius: 100%;">
+                <a href="/" id="home-link" style="color: white; text-decoration: none; font-size: 24px; font-weight: bold;">BuscaPelis</a>
+            </div>
+            <!-- Enlace para la actualización de datos -->
+            <!-- <a href="/configuration" id="update-data">Editar Perfíl</a> -->
+            <!-- Menú principal (visible en escritorio) -->
+            <nav class="d-none d-md-flex">
+                <a href="/chat" id="go-to-chat" style="color: white; text-decoration: none;">Ir al Chat</a>
+                <a href="/configuration" id="update-data" style="color: white; text-decoration: none; margin-right: 20px;">Editar Perfíl</a>
+            </nav>
+        </header>
+
+        <!-- Contenido de la página -->
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>© 2024 BuscaPelis. Todos los derechos reservados.</p>
+            <p><a href="https://www.linkedin.com/in/tu-perfil" target="_blank">Conéctate con nosotros en LinkedIn</a></p>
+        </footer>
+
+        {% block scripts %}
+            <!-- Optional JavaScript -->
+            {{ bootstrap.load_js() }}
+        {% endblock %}
+    </body>
+</html>
