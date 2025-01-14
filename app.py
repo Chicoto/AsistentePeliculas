@@ -211,6 +211,44 @@ def logout():
     #flash("Has cerrado sesión.", "info")
     return redirect(url_for("login"))
 
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    # Si el usuario ya está autenticado, lo redirigimos al dashboard o welcome
+    if "user_id" in session:
+        return redirect(url_for("welcome"))
+
+    # Si la solicitud es un POST (enviar formulario)
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+        confirm_password = request.form.get("confirm_password")
+
+        # Validaciones básicas
+        if not username or not password:
+            flash("Todos los campos son obligatorios", "danger")
+            return redirect(url_for("register"))
+        if password != confirm_password:
+            flash("Las contraseñas no coinciden", "danger")
+            return redirect(url_for("register"))
+
+        # Verifica si el usuario ya existe
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
+            flash("El nombre de usuario ya está en uso", "danger")
+            return redirect(url_for("register"))
+
+        # Crear un nuevo usuario y guardar en la base de datos
+        new_user = User(username=username, password=password)  # Considera hashear la contraseña
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash("Registro exitoso. Por favor, inicia sesión", "success")
+        return redirect(url_for("login"))
+
+    # Si es una solicitud GET, renderiza la página de registro
+    return render_template("register.html")
+
+
 def is_authenticated():
     return "user_id" in session
 

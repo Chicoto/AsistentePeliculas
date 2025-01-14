@@ -4,14 +4,14 @@
 <div class="container mt-5">
     <!-- Título de bienvenida -->
     <div class="row justify-content-center mb-5">
-        <h1 class="display-4 text-center">¡Bienvenido a BuscaPelis!</h1>
+        <h1 class="display-4 text-center">¡Únete a BuscaPelis!</h1>
     </div>
 
-    <!-- Formulario de login -->
+    <!-- Formulario de registro -->
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <h2 class="text-center">Iniciar Sesión</h2>
-            <form action="{{ url_for('login') }}" method="POST">
+            <h2 class="text-center">Crear Cuenta</h2>
+            <form action="{{ url_for('register') }}" method="POST">
                 <!-- Campo para el nombre de usuario -->
                 <div class="form-group">
                     <h5>Nombre de usuario</h5>
@@ -20,7 +20,7 @@
                         class="form-control"
                         id="username"
                         name="username"
-                        placeholder="Ingresa tu nombre de usuario"
+                        placeholder="Elige un nombre de usuario"
                         required
                     >
                 </div>
@@ -32,17 +32,29 @@
                         class="form-control"
                         id="password"
                         name="password"
-                        placeholder="Ingresa tu contraseña"
+                        placeholder="Crea una contraseña"
+                        required
+                    >
+                </div>
+                <!-- Confirmar contraseña -->
+                <div class="form-group mt-3">
+                    <h5>Confirmar contraseña</h5>
+                    <input
+                        type="password"
+                        class="form-control"
+                        id="confirm_password"
+                        name="confirm_password"
+                        placeholder="Repite tu contraseña"
                         required
                     >
                 </div>
                 <!-- Botón para enviar -->
                 <div class="form-group mt-4">
-                    <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
+                    <button type="submit" class="btn btn-primary w-100">Registrarse</button>
                 </div>
             </form>
 
-            <!-- Alerta si el login falla -->
+            <!-- Alerta si el registro falla -->
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <div class="alert alert-danger mt-3" role="alert">
@@ -55,7 +67,7 @@
 
             <!-- Enlace al login si ya tiene cuenta -->
             <div class="text-center mt-3">
-                <h5>¿No tienes tu cuenta? <a href="{{ url_for('register') }}">Haz tu registro aquí</a>.</h5>
+                <h5>¿Ya tienes una cuenta? <a href="{{ url_for('login') }}">Inicia sesión aquí</a>.</h5>
             </div>
         </div>
     </div>
