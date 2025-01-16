@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para ocultar errores
     function hideError(element) {
-        const feedback = element.nextElementSibling;
+        const feedback = element.nextElementSibling; 
         if (feedback && feedback.classList.contains('invalid-feedback')) {
             feedback.remove();
         }

@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let message = [];
         
         if (password.length < minLength) {
-            message.push('Mínimo 6 caracteres');
+            message.push('Mínimo 6 caracteres'); 
         }
         if (!hasUpperCase) {
             message.push('Una mayúscula');

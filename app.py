@@ -144,7 +144,7 @@ def chat():
         return render_template('chat.html', messages=messages, preferences=preferences)
     
 
-@app.route('/configuration', methods=['GET', 'POST'])
+@app.route('/configuration', methods=['GET', 'POST']) 
 def configuration():
     user_id = session.get("user_id")
     user = User.query.get(user_id)
