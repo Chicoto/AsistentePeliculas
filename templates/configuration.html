@@ -6,12 +6,11 @@
 
 {% block content %}
     <div class="container py-5">
-        <h2 class="mb-4">Editar Perfil</h2>
+    
+        <h2>Editar Perfil</h2>
 
         <!-- Formulario de actualización de usuario y contraseña -->
-        <form method="POST">
-
-            <!-- Sección de información de usuario -->
+        <form id="passwordForm" onsubmit="return false;">
             <div class="mb-4">
                 <label for="username" class="form-label">Usuario</label>
                 <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" readonly>
@@ -23,27 +22,30 @@
             </div>
 
             <div class="mt-4">
-                <button type="submit" class="btn btn-primary" name="save_password">Guardar Contraseña</button>
+                <button type="submit" class="btn btn-primary" name="save_password" id="savePasswordBtn">
+                    Guardar Contraseña
+                </button>
             </div>
-
         </form>
 
         <!-- Sección de preferencias -->
         <hr class="my-4">
         <h2 class="mb-4">Preferencias</h2>
 
-        <form method="POST">
+        <form id="preferencesForm" onsubmit="return false;">
             <div class="row">
                 <!-- Columna 1 de géneros -->
                 <div class="col-md-6">
                     <div class="form-check">
                         {% for genre in all_genres[:(all_genres|length)//2] %}
-                            <input class="form-check-input" type="checkbox" name="preferences" value="{{ genre.id }}" id="genre{{ genre.id }}"
-                                {% if genre.id in user_genres %} checked {% endif %}>
-                            <label class="form-check-label" for="genre{{ genre.id }}">
-                                {{ genre.name }}
-                            </label>
-                            <br>
+                            <div class="mb-2">
+                                <input class="form-check-input" type="checkbox" name="preferences" 
+                                       value="{{ genre.id }}" id="genre{{ genre.id }}"
+                                       {% if genre.id in user_genres %} checked {% endif %}>
+                                <label class="form-check-label" for="genre{{ genre.id }}">
+                                    {{ genre.name }}
+                                </label>
+                            </div>
                         {% endfor %}
                     </div>
                 </div>
@@ -52,21 +54,26 @@
                 <div class="col-md-6">
                     <div class="form-check">
                         {% for genre in all_genres[(all_genres|length)//2:] %}
-                            <input class="form-check-input" type="checkbox" name="preferences" value="{{ genre.id }}" id="genre{{ genre.id }}"
-                                {% if genre.id in user_genres %} checked {% endif %}>
-                            <label class="form-check-label" for="genre{{ genre.id }}">
-                                {{ genre.name }}
-                            </label>
-                            <br>
+                            <div class="mb-2">
+                                <input class="form-check-input" type="checkbox" name="preferences" 
+                                       value="{{ genre.id }}" id="genre{{ genre.id }}"
+                                       {% if genre.id in user_genres %} checked {% endif %}>
+                                <label class="form-check-label" for="genre{{ genre.id }}">
+                                    {{ genre.name }}
+                                </label>
+                            </div>
                         {% endfor %}
                     </div>
                 </div>
             </div>
-
+            <div id="alertContainer"></div> <!-- Contenedor específico para alertas -->
             <div class="mt-4">
-                <button type="submit" class="btn btn-azure" name="save_preferences">Guardar Preferencias</button>
+                <button type="submit" class="btn btn-azure" name="save_preferences" id="savePreferencesBtn">
+                    Guardar Preferencias
+                </button>
             </div>
         </form>
-
     </div>
+
+    <script src="{{ url_for('static', filename='js/configuration.js') }}"></script>
 {% endblock %}

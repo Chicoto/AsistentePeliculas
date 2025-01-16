@@ -11,7 +11,7 @@
     <div class="row justify-content-center">
         <div class="col-md-6">
             <h2 class="text-center">Iniciar Sesión</h2>
-            <form action="{{ url_for('login') }}" method="POST">
+            <form id="loginForm" action="{{ url_for('login') }}" method="POST">
                 <!-- Campo para el nombre de usuario -->
                 <div class="form-group">
                     <h5>Nombre de usuario</h5>
@@ -53,6 +53,8 @@
             {% endif %}
             {% endwith %}
 
+            <div id="errorContainer"></div>
+
             <!-- Enlace al login si ya tiene cuenta -->
             <div class="text-center mt-3">
                 <h5>¿No tienes tu cuenta? <a href="{{ url_for('register') }}">Haz tu registro aquí</a>.</h5>
@@ -60,4 +62,6 @@
         </div>
     </div>
 </div>
+
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
 {% endblock %}
