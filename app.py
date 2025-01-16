@@ -114,9 +114,14 @@ def chat():
         db.session.add(Message(content=user_message, author="user", user_id=user_id))
         db.session.commit()
 
+        texto_base = "Eres un chatbot que recomienda películas, te llamas 'BuscaPelis'. Tu rol es responder recomendaciones de manera breve y concisa. No repitas recomendaciones de películas."
+        
+        if misgeneros != "":
+            texto_base = texto_base  + "Importante! ten en cuenta para las recomendaciones que hagas que mis generos favoritos son: " + misgeneros
+        
         messages_for_llm = [{
             "role": "system",
-            "content": "Eres un chatbot que recomienda películas, te llamas 'BuscaPelis'. Tu rol es responder recomendaciones de manera breve y concisa. No repitas recomendaciones de películas.",
+            "content": texto_base,
         }]
 
         for message in Message.get_messages_by_user(user_id):
