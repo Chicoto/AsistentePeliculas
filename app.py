@@ -1,5 +1,6 @@
 from flask import (
     Flask,
+    json,
     jsonify,
     render_template,
     request,
@@ -13,12 +14,14 @@ import os
 from flask_bootstrap import Bootstrap5
 from openai import OpenAI
 from dotenv import load_dotenv
+import requests
 from db import db_config, db
 from decorators import login_required, redirect_if_logged_in
 from models import Message, User, Genre, UserGenre
-# from flask_migrate import Migrate
+from bot import search_movie_or_tv_show, where_to_watch
+from langsmith.wrappers import wrap_openai
+# from getmovie import search_movie
 
-# Configuración de Migraciones
 
 
 load_dotenv()
@@ -31,6 +34,50 @@ db_config(app)
 
 # migrate = Migrate(app, db)
 
+tools = [
+    {
+        'type': 'function',
+        'function': {
+            "name": "where_to_watch",
+            "description": "Returns a list of platforms where a specified movie can be watched.",
+            "parameters": {
+                "type": "object",
+                "required": [
+                    "name"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the movie to search for"
+                    }
+                },
+                "additionalProperties": False
+            }
+        },
+    },
+    {
+        'type': 'function',
+        'function': {
+            "name": "search_movie_or_tv_show",
+            "description": "Returns information about a specified movie or TV show.",
+            "parameters": {
+                "type": "object",
+                "required": [
+                    "name"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the movie/tv show to search for"
+                    }
+                },
+                "additionalProperties": False
+            }
+        },
+    }
+]
+
+
 @app.route('/welcome')
 @login_required
 def welcome():
@@ -41,13 +88,6 @@ def welcome():
 
 def index():
     return redirect(url_for('login'))
-
-
-# #route para las vistas
-# @app.route('/')
-# def index():
-#     return render_template('chat.html')
-
 
 @app.route('/chat', methods=['GET', 'POST'])
 @login_required
@@ -133,10 +173,29 @@ def chat():
         chat_completion = client.chat.completions.create(
             messages=messages_for_llm,
             model="gpt-4o",
+            tools=tools,
             temperature=1.2
         )
 
-        model_recommendation = chat_completion.choices[0].message.content
+        # model_recommendation = chat_completion.choices[0].message.content
+        print(chat_completion.choices[0].message.tool_calls)
+        if chat_completion.choices[0].message.tool_calls:
+            tool_call = chat_completion.choices[0].message.tool_calls[0]
+            print("aca estamos")
+            print(tool_call)
+            if tool_call.function.name == 'where_to_watch':
+                arguments = json.loads(tool_call.function.arguments)
+                name = arguments['name']
+                model_recommendation = where_to_watch(client, name, user)
+            elif tool_call.function.name == 'search_movie_or_tv_show':
+                arguments = json.loads(tool_call.function.arguments)
+                name = arguments['name']
+                model_recommendation = search_movie_or_tv_show(client, name, user)
+        else:
+            print("se fue al else")
+            model_recommendation = chat_completion.choices[0].message.content
+
+
         db.session.add(Message(content=model_recommendation, author="assistant", user_id=user_id))
         db.session.commit()
 
@@ -193,43 +252,6 @@ def configuration():
 
     return render_template('configuration.html', user=user, all_genres=all_genres, user_genres=user_genres)
 
-# @app.route('/configuration', methods=['GET', 'POST'])
-# def configuration():
-#     user_id = session.get("user_id")
-#     user = User.query.get(user_id)  # Usamos user_id = 1 como ejemplo
-#     all_genres = Genre.query.all()
-
-#     # Obtener géneros actuales del usuario
-#     user_genres = [genre.id for genre in user.genres]  # Lista de géneros que el usuario tiene
-
-#     if request.method == 'POST':
-#         if 'save_password' in request.form:
-#             # Guardar la nueva contraseña
-#             password = request.form.get('password')
-#             if password:
-#                 user.password = password
-#                 db.session.commit()
-#                 flash('Contraseña actualizada correctamente', 'success')
-
-#         elif 'save_preferences' in request.form:
-#             # Guardar las preferencias seleccionadas
-#             selected_genres = request.form.getlist('preferences')
-#             selected_genre_ids = [int(genre_id) for genre_id in selected_genres]
-
-#             # Eliminar las relaciones existentes en user_genres
-#             user.genres = []  # Esto eliminará las preferencias actuales del usuario
-
-#             # Agregar las nuevas preferencias
-#             for genre_id in selected_genre_ids:
-#                 genre = Genre.query.get(genre_id)
-#                 user.genres.append(genre)
-
-#             db.session.commit()
-#             flash('Preferencias actualizadas correctamente', 'success')
-
-#         return redirect(url_for('configuration'))  # Redirigir para recargar la página con los datos actualizados
-
-#     return render_template('configuration.html', user=user, all_genres=all_genres, user_genres=user_genres)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -368,32 +390,6 @@ def check_username():
     return jsonify({"available": existing_user is None})
 
 
-# @app.route("/login", methods=["GET", "POST"])
-# def login():
-#     # Si el usuario ya está autenticado, lo redirigimos al chat o dashboard
-#     if "user_id" in session:
-#         return redirect(url_for("welcome"))  # O redirige a la página deseada (chat, dashboard, etc.)
-
-#     # Si la solicitud es un POST (enviar formulario)
-#     if request.method == "POST":
-#         username = request.form.get("username")
-#         password = request.form.get("password")
-
-#         # Busca al usuario en la base de datos por su username
-#         user = User.query.filter_by(username=username).first()
-
-#         # Verifica que el usuario exista y que la contraseña coincida
-#         if user and user.password == password:
-#             session["user_id"] = user.id  # Guarda el ID del usuario en la sesión
-#             flash("Inicio de sesión exitoso", "success")
-#             return redirect(url_for("welcome"))  # Redirige a la página protegida (chat o dashboard)
-#         else:
-#             flash("Credenciales incorrectas", "danger")
-#             return redirect(url_for("login"))  # Redirige nuevamente al login si las credenciales son incorrectas
-
-#     # Si es una solicitud GET, simplemente renderiza la página de login
-#     return render_template("login.html")
-
 
 
 @app.route("/logout")
@@ -403,43 +399,6 @@ def logout():
 
     return redirect(url_for("login"))
 
-# @app.route("/register", methods=["GET", "POST"])
-# def register():
-#     # Si el usuario ya está autenticado, lo redirigimos al dashboard o welcome
-#     if "user_id" in session:
-#         return redirect(url_for("welcome"))
-
-#     # Si la solicitud es un POST (enviar formulario)
-#     if request.method == "POST":
-#         username = request.form.get("username")
-#         password = request.form.get("password")
-#         confirm_password = request.form.get("confirm_password")
-
-#         # Validaciones básicas
-#         if not username or not password:
-#             flash("Todos los campos son obligatorios", "danger")
-#             return redirect(url_for("register"))
-#         if password != confirm_password:
-#             flash("Las contraseñas no coinciden", "danger")
-#             return redirect(url_for("register"))
-
-#         # Verifica si el usuario ya existe
-#         existing_user = User.query.filter_by(username=username).first()
-#         if existing_user:
-#             flash("El nombre de usuario ya está en uso", "danger")
-#             return redirect(url_for("register"))
-
-#         # Crear un nuevo usuario y guardar en la base de datos
-#         new_user = User(username=username, password=password)  # Considera hashear la contraseña
-#         db.session.add(new_user)
-#         db.session.commit()
-
-#         flash("Registro exitoso. Por favor, inicia sesión", "success")
-#         return redirect(url_for("login"))
-
-#     # Si es una solicitud GET, renderiza la página de registro
-#     return render_template("register.html")
-
 
 def is_authenticated():
     return "user_id" in session
@@ -447,3 +406,5 @@ def is_authenticated():
 @app.context_processor
 def inject_user():
     return {"is_authenticated": is_authenticated}
+
+
